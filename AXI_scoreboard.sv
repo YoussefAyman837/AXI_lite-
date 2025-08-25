@@ -37,70 +37,75 @@ logic read_addr_ready_ref , read_data_valid_ref , write_addr_ready_ref , write_d
         wait(vif.rstn);
         `uvm_info("AXI_SCOREBOARD", "Reset deasserted, starting transactions", UVM_MEDIUM)
         forever begin
-           // @(negedge vif.clk);
+            @(negedge vif.clk);
+            @(negedge vif.clk);
+            @(negedge vif.clk);
+
             sb_fifo.get(seq_item);
-            ref_model(seq_item);
+            ref_model();
             
              // Ensure reference signals are updated before comparison
-            
+            //@(negedge vif.clk);
             // Debug messages
-           /* `uvm_info("run_phase", $sformatf("Reference: write_addr_ready_ref = %0b, write_data_ready_ref = %0b, read_addr_ready_ref = %0b, read_data_valid_ref = %0b, read_data_ref = %0h",
+            /*
+            `uvm_info("run_phase", $sformatf("Reference: write_addr_ready_ref = %0b, write_data_ready_ref = %0b, read_addr_ready_ref = %0b, read_data_valid_ref = %0b, read_data_ref = %0h",
                 write_addr_ready_ref, write_data_ready_ref, read_addr_ready_ref, read_data_valid_ref, read_data_ref), UVM_LOW);
             `uvm_info("run_phase", $sformatf("Actual: write_addr_ready = %0b, write_data_ready = %0b, read_addr_ready = %0b, read_data_valid = %0b, read_data = %0h",
-                seq_item.write_addr_ready, seq_item.write_data_ready, seq_item.read_addr_ready, seq_item.read_data_valid, seq_item.read_data), UVM_LOW);
-                */
+                vif.write_addr_ready, vif.write_data_ready, vif.read_addr_ready, vif.read_data_valid, vif.read_data), UVM_LOW);
+            */
             // Comparison logic
-            if (seq_item.write_addr_ready != write_addr_ready_ref) begin
-                `uvm_error("run_phase", $sformatf("Write Addr Ready comparison failed: Expected %0b, Actual %0b", write_addr_ready_ref, seq_item.write_addr_ready));
+        
+            if (vif.write_addr_ready != write_addr_ready_ref) begin
+                `uvm_error("run_phase", $sformatf("Write Addr Ready comparison failed: Expected %0b, Actual %0b", write_addr_ready_ref, vif.write_addr_ready));
             end
-            if (seq_item.write_data_ready != write_data_ready_ref) begin
-                `uvm_error("run_phase", $sformatf("Write Data Ready comparison failed: Expected %0b, Actual %0b", write_data_ready_ref, seq_item.write_data_ready));
+            if (vif.write_data_ready != write_data_ready_ref) begin
+                `uvm_error("run_phase", $sformatf("Write Data Ready comparison failed: Expected %0b, Actual %0b", write_data_ready_ref, vif.write_data_ready));
             end
-            if (seq_item.read_addr_ready != read_addr_ready_ref) begin
-                `uvm_error("run_phase", $sformatf("Read Addr Ready comparison failed: Expected %0b, Actual %0b", read_addr_ready_ref, seq_item.read_addr_ready));
+            if (vif.read_addr_ready != read_addr_ready_ref) begin
+                `uvm_error("run_phase", $sformatf("Read Addr Ready comparison failed: Expected %0b, Actual %0b", read_addr_ready_ref, vif.read_addr_ready));
             end
-            if (seq_item.read_data_valid != read_data_valid_ref) begin
-                `uvm_error("run_phase", $sformatf("Read Data Valid comparison failed: Expected %0b, Actual %0b", read_data_valid_ref, seq_item.read_data_valid));
+            if (vif.read_data_valid != read_data_valid_ref) begin
+                `uvm_error("run_phase", $sformatf("Read Data Valid comparison failed: Expected %0b, Actual %0b", read_data_valid_ref, vif.read_data_valid));
             end
-            if (seq_item.read_data != read_data_ref) begin
-                `uvm_error("run_phase", $sformatf("Read Data comparison failed: Expected %0h, Actual %0h", read_data_ref, seq_item.read_data));
+            if (vif.read_data != read_data_ref) begin
+                `uvm_error("run_phase", $sformatf("Read Data comparison failed: Expected %0h, Actual %0h", read_data_ref, vif.read_data));
             end
         end
     endtask
-    task ref_model(axi_sequence_item seq_item);
+    task ref_model();
         if(!vif.rstn)begin
-         write_addr_ready_ref = 0;
+         write_addr_ready_ref = 0;  
         write_data_ready_ref = 0;
         read_addr_ready_ref = 0;
         read_data_valid_ref = 0;
         read_data_ref = 0;   
         end
         else begin
-        if(seq_item.write_addr_valid)begin
-            @(negedge vif.clk);
+        if(vif.write_addr_valid)begin
+           // @(negedge vif.clk);
             write_addr_ready_ref=1;
         end
         else begin
             write_addr_ready_ref=0;
         end
-         if(seq_item.write_data_valid)begin
-            @(negedge vif.clk);
+         if(vif.write_data_valid)begin
+            //@(negedge vif.clk);
             write_data_ready_ref=1;
         end
         else begin
             write_data_ready_ref=0;
         end
-         if(seq_item.read_addr_valid)begin
-            @(negedge vif.clk);
+         if(vif.read_addr_valid)begin
+            //@(negedge vif.clk);
             read_addr_ready_ref=1;
         end
         else begin
             read_addr_ready_ref=0;
         end
-         if(seq_item.read_data_ready)begin
-            @(negedge vif.clk);
+         if(vif.read_data_ready)begin
+            //@(negedge vif.clk);
             read_data_valid_ref=1;
-            read_data_ref=seq_item.read_data;
+            read_data_ref=vif.read_data;
         end
         else begin
             read_data_valid_ref=0;
